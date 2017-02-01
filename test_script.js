@@ -10,15 +10,24 @@ const client = new pg.Client({
   ssl      : settings.ssl
 });
 
+const selector = process.argv[2];
+
+function output(first, last, birthdate){
+  console.log('Seaching...\n',
+  'Found 1 person(s) by the name', "'"+last+ "':\n",
+  '- 1: ' + first, last+', born '+"'"+birthdate.toISOString().slice(0,10)+ "'");
+}
+
 client.connect((err) => {
   if (err) {
     return console.error("Connection Error", err);
   }
-  client.query("SELECT $1::int AS number", ["1"], (err, result) => {
+  client.query("SELECT * FROM famous_people WHERE last_name='" + selector + "'", (err, result) => {
     if (err) {
       return console.error("error running query", err);
     }
-    console.log(result.rows[0].number); //output: 1
+    const person = result.rows[0];
+    output(person.first_name, person.last_name, person.birthdate);
     client.end();
   });
 });
